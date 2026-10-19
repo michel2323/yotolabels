@@ -37,7 +37,7 @@ A Yoto card is about 3.375 × 2.125 in. Each label therefore holds a 3.375 × 2 
 
 ## Install
 
-Download `YotoLabels-<version>-win-x64.zip` from the [Releases](../../releases) page, unzip it anywhere, and run `YotoLabels.exe`. Nothing else needs to be installed.
+Download `YotoLabels-<version>-win-x64.zip` (or `-win-arm64.zip` for ARM PCs such as Snapdragon laptops) from the [Releases](../../releases) page, unzip it anywhere, and run `YotoLabels.exe`. Nothing else needs to be installed.
 
 Windows 10 version 2004 or newer is required. Windows 11 gives the intended look.
 
@@ -63,7 +63,9 @@ Create the portable folder that the release zip contains:
 dotnet publish src/YotoLabels -c Release -r win-x64 -p:Platform=x64 -o publish/YotoLabels
 ```
 
-Pushing a tag such as `v0.1.0` runs the release workflow, which publishes the app and attaches the zip to a GitHub release.
+For ARM64, use `-r win-arm64 -p:Platform=ARM64`. It cross-compiles fine from an x64 machine.
+
+Pushing a tag such as `v0.1.0` runs the release workflow, which publishes the app and attaches the x64 and ARM64 zips to a GitHub release.
 
 ## Project layout
 
