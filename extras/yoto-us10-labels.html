@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yoto US-10 Labels</title>
+<style>
+  /* TownStix US-10: Letter sheet, 10 labels 4in x 2in, 2 cols x 5 rows,
+     margins 0.5in top/bottom, 0.15in left/right, 0.2in column gap, 0 row gap. */
+  :root {
+    --sheet-w: 8.5in; --sheet-h: 11in;
+    --label-w: 4in;  --label-h: 2in;
+    --margin-top: 0.5in; --margin-left: 0.15in; --col-gap: 0.2in;
+    --card-w: 3.375in;            /* Yoto card long side, fits inside the 4in label */
+    --offset-x: 0mm; --offset-y: 0mm;
+    --radius: 3mm;
+    --bg: #f3f4f6; --fg: #111827; --muted: #6b7280; --accent: #2563eb; --panel: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #111827; --fg: #f9fafb; --muted: #9ca3af; --panel: #1f2937; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; }
+
+  .toolbar {
+    padding: 12px 16px; background: var(--panel); display: flex; flex-wrap: wrap; gap: 10px 18px;
+    align-items: center; border-bottom: 1px solid rgba(128,128,128,.3);
+  }
+  .toolbar h1 { font-size: 16px; margin: 0 8px 0 0; }
+  .toolbar label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
+  .toolbar input[type=number] { width: 60px; }
+  button, select { padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(128,128,128,.4); background: var(--panel); color: var(--fg); cursor: pointer; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .hint { padding: 8px 16px; color: var(--muted); font-size: 13px; }
+
+  .sheet-wrap { overflow: auto; padding: 16px; }
+  .sheet {
+    position: relative; width: var(--sheet-w); height: var(--sheet-h); margin: 0 auto;
+    background: #fff; color: #000; box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .label {
+    position: absolute; width: var(--label-w); height: var(--label-h);
+    left: calc(var(--margin-left) + var(--col) * (var(--label-w) + var(--col-gap)) + var(--offset-x));
+    top:  calc(var(--margin-top)  + var(--row) * var(--label-h) + var(--offset-y));
+    outline: 1px dashed #bbb;   /* label edge, screen only */
+  }
+  /* The Yoto-card sized zone */
+  .card {
+    position: absolute; left: 0; top: 0; width: var(--card-w); height: var(--label-h);
+    overflow: hidden; background: #eef2ff; border-radius: var(--radius);
+    display: flex;
+  }
+  /* Image box: fills the whole card in "fill" layout, a 2x2 square in "square" layout */
+  .pic {
+    position: relative; overflow: hidden; flex: 0 0 100%; height: 100%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; color: #666;
+  }
+  .sheet.square .pic { flex-basis: var(--label-h); }
+  .pic img {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+    transform-origin: center center; cursor: grab; user-select: none; -webkit-user-drag: none;
+  }
+  .pic img:active { cursor: grabbing; }
+  .pic .ph { font-size: 12px; padding: 8px; pointer-events: none; }
+  .has-img .ph { display: none; }
+
+  /* Title: overlay strip in fill layout, side panel in square layout */
+  .cap {
+    outline: none; font-weight: 600; color: #000; min-height: 1.4em;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .cap:empty::before { content: attr(data-placeholder); color: #999; font-weight: 400; }
+  .sheet:not(.square) .cap {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 6px; font-size: 11px;
+    background: rgba(255,255,255,.85);
+  }
+  .sheet.square .cap {
+    flex: 1 1 auto; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 6px; font-size: 13px; line-height: 1.25; background: #fff; word-break: break-word;
+  }
+  .sheet.square .pic { border-radius: var(--radius) 0 0 var(--radius); }
+
+  .cut { position: absolute; top: 0; bottom: 0; left: var(--card-w); border-left: 1px dashed #999; }
+  .tab { position: absolute; left: calc(var(--card-w) + 2px); top: 0; width: calc(var(--label-w) - var(--card-w) - 2px); height: 100%;
+         display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 10px; }
+  .clr { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; font-size: 11px; line-height: 16px;
+         padding: 0; display: none; z-index: 2; }
+  .has-img .clr { display: block; }
+
+  @page { size: 8.5in 11in; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    .toolbar, .hint, .clr, .tab { display: none !important; }
+    .sheet-wrap { padding: 0; overflow: visible; }
+    .sheet { box-shadow: none; margin: 0; }
+    .label { outline: none; }
+    .card { background: transparent; }
+    .ph { display: none; }
+    .sheet:not(.square) .cap:empty { display: none; }
+    .cut { display: var(--print-cut, block); }
+  }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <h1>Yoto labels on TownStix US-10</h1>
+    <button id="fill">Add images…</button>
+    <label>Layout
+      <select id="layout">
+        <option value="fill">Cover fills card (crop)</option>
+        <option value="square" selected>Square cover + title</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="roundcorners" checked> Rounded corners</label>
+    <label><input type="checkbox" id="cutline" checked> Print cut line</label>
+    <label>Offset X (mm) <input type="number" id="ox" value="0" step="0.5"></label>
+    <label>Offset Y (mm) <input type="number" id="oy" value="0" step="0.5"></label>
+    <button id="clear">Clear all</button>
+    <button class="primary" id="print">Print / Save PDF</button>
+  </div>
+  <div class="hint">
+    Click an empty slot or drop images on it. "Add images…" fills empty slots in order.
+    Inside a picture: <b>scroll to zoom, drag to move, double-click to replace</b>. Click the title area to type.
+    When printing, set scale to 100% (Actual size), margins None, paper Letter. Test on plain paper first and hold it against a label sheet;
+    use the offsets to correct a small shift. Each label is 4 x 2 in; the card zone is 3.375 x 2 in (a Yoto card), so trim at the dashed line.
+  </div>
+  <div class="sheet-wrap">
+    <div class="sheet square" id="sheet"></div>
+  </div>
+  <input type="file" id="picker" accept="image/*" multiple hidden>
+
+<script>
+(function () {
+  var sheet = document.getElementById('sheet');
+  var picker = document.getElementById('picker');
+  var pendingSlot = null;
+
+  for (var i = 0; i < 10; i++) {
+    var row = Math.floor(i / 2), col = i % 2;
+    var lab = document.createElement('div');
+    lab.className = 'label';
+    lab.style.setProperty('--row', row);
+    lab.style.setProperty('--col', col);
+    lab.innerHTML =
+      '<div class="card">' +
+        '<div class="pic" title="Click or drop an image">' +
+          '<div class="ph">Click or drop<br>image here</div>' +
+          '<button class="clr" title="Remove image">×</button>' +
+        '</div>' +
+        '<div class="cap" contenteditable="true" spellcheck="false" data-placeholder="Title"></div>' +
+      '</div>' +
+      '<div class="cut"></div><div class="tab">trim</div>';
+    sheet.appendChild(lab);
+  }
+
+  /* ---- image state: zoom / pan per slot ---- */
+  function applyTransform(img) {
+    img.style.transform = 'translate(' + img._dx + 'px,' + img._dy + 'px) scale(' + img._s + ')';
+  }
+  function setImage(label, file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    var pic = label.querySelector('.pic');
+    var old = pic.querySelector('img');
+    if (old) { URL.revokeObjectURL(old.src); old.remove(); }
+    var img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.alt = '';
+    img.draggable = false;
+    img._s = 1; img._dx = 0; img._dy = 0;
+    applyTransform(img);
+    pic.insertBefore(img, pic.firstChild);
+    label.classList.add('has-img');
+  }
+  function clearImage(label) {
+    var img = label.querySelector('img');
+    if (img) { URL.revokeObjectURL(img.src); img.remove(); }
+    label.classList.remove('has-img');
+  }
+
+  // Zoom with the wheel
+  sheet.addEventListener('wheel', function (e) {
+    var img = e.target.closest('.pic') && e.target.closest('.pic').querySelector('img');
+    if (!img) return;
+    e.preventDefault();
+    var f = Math.pow(1.1, -e.deltaY / 100);
+    img._s = Math.min(8, Math.max(0.2, img._s * f));
+    applyTransform(img);
+  }, { passive: false });
+
+  // Pan by dragging
+  var drag = null;
+  sheet.addEventListener('pointerdown', function (e) {
+    var img = e.target.closest('img'); if (!img) return;
+    drag = { img: img, x: e.clientX, y: e.clientY, dx: img._dx, dy: img._dy, moved: false };
+    img.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  sheet.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var mx = e.clientX - drag.x, my = e.clientY - drag.y;
+    if (Math.abs(mx) + Math.abs(my) > 3) drag.moved = true;
+    drag.img._dx = drag.dx + mx; drag.img._dy = drag.dy + my;
+    applyTransform(drag.img);
+  });
+  sheet.addEventListener('pointerup', function () { drag = null; });
+  sheet.addEventListener('pointercancel', function () { drag = null; });
+
+  // Click: pick image for empty slot; remove via ×
+  sheet.addEventListener('click', function (e) {
+    var label = e.target.closest('.label'); if (!label) return;
+    if (e.target.closest('.clr')) { clearImage(label); return; }
+    if (e.target.closest('.cap')) return;
+    if (e.target.closest('.pic') && !label.classList.contains('has-img')) {
+      pendingSlot = label; picker.multiple = false; picker.click();
+    }
+  });
+  // Double-click a picture to replace it
+  sheet.addEventListener('dblclick', function (e) {
+    var label = e.target.closest('.label'); if (!label) return;
+    if (e.target.closest('.pic') && label.classList.contains('has-img')) {
+      pendingSlot = label; picker.multiple = false; picker.click();
+    }
+  });
+
+  sheet.addEventListener('dragover', function (e) { if (e.target.closest('.pic')) e.preventDefault(); });
+  sheet.addEventListener('drop', function (e) {
+    var label = e.target.closest('.label'); if (!label) return;
+    e.preventDefault();
+    var files = Array.from(e.dataTransfer.files);
+    if (!files.length) return;
+    var labels = Array.from(sheet.children);
+    var start = labels.indexOf(label);
+    files.forEach(function (f, k) { if (labels[start + k]) setImage(labels[start + k], f); });
+  });
+
+  document.getElementById('fill').addEventListener('click', function () {
+    pendingSlot = null; picker.multiple = true; picker.click();
+  });
+  picker.addEventListener('change', function () {
+    var files = Array.from(picker.files);
+    if (pendingSlot) { setImage(pendingSlot, files[0]); }
+    else {
+      var empties = Array.from(sheet.children).filter(function (l) { return !l.classList.contains('has-img'); });
+      files.forEach(function (f, k) { if (empties[k]) setImage(empties[k], f); });
+    }
+    picker.value = ''; pendingSlot = null;
+  });
+
+  document.getElementById('clear').addEventListener('click', function () {
+    Array.from(sheet.children).forEach(function (l) { clearImage(l); l.querySelector('.cap').textContent = ''; });
+  });
+  document.getElementById('print').addEventListener('click', function () { window.print(); });
+
+  var root = document.documentElement;
+  document.getElementById('layout').addEventListener('change', function (e) {
+    sheet.classList.toggle('square', e.target.value === 'square');
+  });
+  document.getElementById('ox').addEventListener('input', function (e) { root.style.setProperty('--offset-x', (parseFloat(e.target.value) || 0) + 'mm'); });
+  document.getElementById('oy').addEventListener('input', function (e) { root.style.setProperty('--offset-y', (parseFloat(e.target.value) || 0) + 'mm'); });
+  document.getElementById('cutline').addEventListener('change', function (e) { root.style.setProperty('--print-cut', e.target.checked ? 'block' : 'none'); });
+  document.getElementById('roundcorners').addEventListener('change', function (e) { root.style.setProperty('--radius', e.target.checked ? '3mm' : '0'); });
+})();
+</script>
+</body>
+</html>

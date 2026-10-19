@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <RootNamespace>YotoLabels</RootNamespace>
+    <AssemblyName>YotoLabels</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <WinUISDKReferences>false</WinUISDKReferences>
+
+    <!-- Unpackaged, self-contained: runs from a plain folder, no MSIX, no runtime installer. -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <!-- Needed even when unpackaged: it carries the app's resources.pri into the publish output. -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+
+    <Product>Yoto Labels</Product>
+    <Description>Lay out and print Yoto card labels on TownStix US-10 sheets.</Description>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\AppIcon.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Only the Windows App SDK components the app uses. The full Microsoft.WindowsAppSDK
+         metapackage also pulls in AI, ML and search runtimes, which add over 50 MB. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="2.3.9" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="2.3.12" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.1.9" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+
+  <!-- Trimming is off: WinUI XAML and System.Text.Json reflection are not trim-safe here. -->
+  <PropertyGroup>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">true</PublishReadyToRun>
+  </PropertyGroup>
+</Project>
